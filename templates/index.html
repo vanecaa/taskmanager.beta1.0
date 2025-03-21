@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Individual Task Manager</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+    </style>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <!-- Модальное окно для добавления задачи -->
+    <div class="modal" id="modalWindowTask">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('modalWindowTask').style.display='none'">&times;</span>
+            <h2>Добавить задачу</h2>
+            <form class="form-grid" action="/add" method="POST">
+                <input type="text" name="title" placeholder="Название задачи" required>
+                <input type="text" name="description" placeholder="Описание задачи">
+                <input type="date" name="date" placeholder="Дата задачи">
+                <input type="text" name="responsible" placeholder="Ответственный за задачу">
+                <input type="text" name="region" placeholder="Регион задачи">
+                
+                <!-- Выбор приоритета -->
+                <select name="priority" required>
+                    <option value="" disabled selected>Выберите приоритет</option>
+                    <option value="Срочный">Срочный</option>
+                    <option value="Высокий">Высокий</option>
+                    <option value="Средний">Средний</option>
+                    <option value="Низкий">Низкий</option>
+                </select>
+                
+                <button type="submit">Добавить задачу</button>
+            </form>
+        </div>
+    </div>
+
+    <!--Модальное окно для поиска задачи-->
+    <div class="modal" id="modalWindowSearch">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('modalWindowSearch').style.display='none'">&times;</span>
+            <h2>Search</h2>
+            <form class="form-grid" action="/search" method="GET">
+                <input type="text" name="query" placeholder="Название задачи" required>
+                <button type="submit">Поиск</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Боковая панель -->
+    <div class="sidebar">
+        <div class="account">
+            <img src="#" alt="#">
+            {{ current_user.username }}
+        </div>
+
+        <div class="add-task">
+            <a href="#" onclick="document.getElementById('modalWindowTask').style.display='block'">add task</a>
+        </div>
+
+        <div class="search">
+            <a href="#" onclick="document.getElementById('modalWindowSearch').style.display='block'">search</a>
+        </div>
+        
+        <div class="completed">
+            <a href="{{ url_for('completed_tasks') }}" class="active">completed</a>
+        </div>
+    </div>
+
+    <!-- Заголовок -->
+    <div class="header">
+        <p class="header-text">Individual Task Manager</p>
+    </div>
+    
+    <!-- Список задач -->
+    <h1>Задачи</h1>
+    <div class="task-window">
+        <div id="task-list">
+            {% for date, tasks in grouped_tasks.items() %}
+                <h2>{{ date.strftime('%d.%m.%Y') }}</h2>  <!-- Заголовок с датой -->
+                <ul class="ul">
+                    {% for task in tasks %}
+                    <li class="list">
+                        <div class="list-task">
+                            <span class="{% if task.completed %}completed{% endif %}">
+                                {{ task.title }} - {{ task.description }}<br>
+                                Ответственный: {{ task.responsible }}<br>
+                                Регион: {{ task.region }}<br>
+                                Приоритет: {{ task.priority }}
+                            </span>
+                            <a href="{{ url_for('edit_task', task_id=task.id) }}">Редактировать</a>
+                            <a href="{{ url_for('complete_task', id=task.id) }}">✔️</a>
+                            <a href="{{ url_for('delete_task', id=task.id) }}">❌</a>
+                            <form action="{{ url_for('toggle_tracking', task_id=task.id) }}" method="POST" style="display: inline;">
+                                <button type="submit">
+                                    {% if task in current_user.tracked_tasks %} Убрать отслеживание {% else %} Отслеживать {% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        </div>        
+    </div>
+</body>
+</html>

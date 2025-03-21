@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completed Tasks</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <!-- Боковая панель -->
+    <div class="sidebar">
+        <div class="account">
+            <img src="#" alt="User Avatar">
+            {{ current_user.username }} <!-- Отображаем имя пользователя -->
+        </div>
+
+        <div class="add-task">
+            <a href="#" onclick="document.getElementById('modalWindowTask').style.display='block'">Add Task</a>
+        </div>
+
+        <div class="search">
+            <a href="#" onclick="document.getElementById('modalWindowSearch').style.display='block'">Search</a>
+        </div>
+
+        <div class="completed">
+            <a href="{{ url_for('index') }}">Back to Tasks</a>
+        </div>
+    </div>
+
+    <!-- Заголовок -->
+    <div class="header">
+        <p class="header-text">Completed Tasks</p>
+    </div>
+
+    <!-- Список выполненных задач -->
+    <div class="task-window">
+        <h1>Completed Tasks</h1>
+        <div id="task-list">
+            <ul class="ul">
+                {% for task in tasks %}
+                <li class="list">
+                    <div class="list-task">
+                        <span class="completed">{{ task.title }} - {{ task.description }}</span>
+                        <a href="{{ url_for('complete_task', id=task.id) }}">✔️</a>
+                        <a href="{{ url_for('delete_task', id=task.id) }}">❌</a>
+                        <form action="{{ url_for('toggle_tracking', task_id=task.id) }}" method="POST" style="display: inline;">
+                            <button type="submit">
+                                {% if task in current_user.tracked_tasks %} Убрать отслеживание {% else %} Отслеживать {% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Модальное окно для поиска выполненных задач -->
+    <div class="modal" id="modalWindowSearch">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('modalWindowSearch').style.display='none'">&times;</span>
+            <h2>Search Completed Tasks</h2>
+            <form class="form-grid" action="/search_completed" method="GET">
+                <input type="text" name="query" placeholder="Название задачи" required>
+                <button type="submit">Поиск</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
