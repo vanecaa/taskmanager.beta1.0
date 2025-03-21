@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 
 # Инициализация Flask
 app = Flask(__name__)
-app.secret_key = 'your-secret-key'  # Замените на секретный ключ из переменных окружения
+app.secret_key = 'gdkfjngdf-dfgdggnd!-sdfsn12-jegnsgseg-sgeegseg'  # Замените на секретный ключ из переменных окружения
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///individualtaskmanager.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
