@@ -23,7 +23,7 @@
         </div>
 
         <div class="completed">
-            <a href="{{ url_for('index') }}">Back to Tasks</a>
+            <a href="{{ url_for('main.index') }}">Back to Tasks</a>
         </div>
     </div>
 
@@ -41,9 +41,9 @@
                 <li class="list">
                     <div class="list-task">
                         <span class="completed">{{ task.title }} - {{ task.description }}</span>
-                        <a href="{{ url_for('complete_task', id=task.id) }}">✔️</a>
-                        <a href="{{ url_for('delete_task', id=task.id) }}">❌</a>
-                        <form action="{{ url_for('toggle_tracking', task_id=task.id) }}" method="POST" style="display: inline;">
+                        <a href="{{ url_for('main.complete_task', id=task.id) }}">✔️</a>
+                        <a href="{{ url_for('main.delete_task', id=task.id) }}">❌</a>
+                        <form action="{{ url_for('main.toggle_tracking', task_id=task.id) }}" method="POST" style="display: inline;">
                             <button type="submit">
                                 {% if task in current_user.tracked_tasks %} Убрать отслеживание {% else %} Отслеживать {% endif %}
                             </button>

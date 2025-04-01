@@ -8,16 +8,19 @@
 </head>
 <body>
     <div class="wrapper">
-        <form method="POST">
+        <form method="POST" action="{{ url_for('main.register') }}">
             <h1>Регистрация</h1>
             <div class="input-box">
                 <input type="text" name="username" placeholder="Имя пользователя" required>
             </div>
             <div class="input-box">
+                <input type="email" name="email" placeholder="Корпоративная почта" required>
+            </div>
+            <div class="input-box">
                 <input type="password" name="password" placeholder="Пароль" required>
             </div>
             <button type="submit" class="btn">Зарегистрироваться</button>
-            <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
+            <p>Уже есть аккаунт? <a href="{{ url_for('main.login') }}">Войти</a></p>
         </form>
     </div>
 </body>
