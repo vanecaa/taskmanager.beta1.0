@@ -1,2 +1,1 @@
-'''web: gunicorn app:app'''
-#то что тут подсвечивается => это так и надо 
+web: gunicorn app:create_app
