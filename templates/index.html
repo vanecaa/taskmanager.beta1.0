@@ -6,7 +6,6 @@
     <title>Individual Task Manager</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-        /* Модальные окна */
         .modal {
             display: none;
             position: fixed;
@@ -15,48 +14,67 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
         }
+
         .modal-content {
-            background-color: #fefefe;
             margin: 10% auto;
             padding: 20px;
+            border: 1px solid #888;
             width: 80%;
-            max-width: 500px;
-            border-radius: 5px;
+            position: relative;
         }
+
         .close {
+            color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
         }
-        
-        /* Кнопки действий */
-        .task-actions {
+
+        .close:hover,
+        .close:focus {
+            color: rgb(255, 255, 255);
+            text-decoration: none;
+        }
+
+        .task-window {
+            margin-left: 260px;
+            padding: 10px;
+        }
+
+        .list-task {
             display: flex;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-btn {
+            margin-left: 10px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .modal-buttons {
             margin-top: 10px;
         }
-        .action-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
+
+        .modal-buttons button {
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
-<!--Модальное окно для добавления задачи-->
-
-
+    <!-- Модальное окно для добавления задачи -->
     <div id="modalWindowTask" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('modalWindowTask')">&times;</span>
             <h2>Добавить задачу</h2>
             <form action="{{ url_for('main.add_task') }}" method="POST">
                 <input type="text" name="title" placeholder="Название" required>
-                <input type="text" name="description" placeholder="Описание">
+                <input style="overflow: hidden scroll" type="text" name="description" maxlength="50" placeholder="Описание">
                 <input type="date" name="date">
                 <input type="text" name="responsible" placeholder="Ответственный">
                 <input type="text" name="region" placeholder="Регион">
@@ -68,26 +86,26 @@
                 </select>
                 <div class="modal-buttons">
                     <button type="submit">Добавить</button>
-                    <button type="button" onclick="closeModal('modalWindowTask')">Выйти</button>
                 </div>
             </form>
         </div>
     </div>
 
-<!-- Модальное окно поиска -->
-<div id="modalWindowSearch" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('modalWindowSearch')">&times;</span>
-        <h2>Поиск задач</h2>
-        <form action="{{ url_for('main.search_tasks') }}" method="GET">
-            <input type="text" name="query" placeholder="Поиск..." required>
-            <div class="modal-buttons">
-                <button type="submit">Искать</button>
-                <button type="button" onclick="closeModal('modalWindowSearch')">Выйти</button>
-            </div>
-        </form>
+    <!-- Модальное окно поиска -->
+    <div id="modalWindowSearch" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('modalWindowSearch')">&times;</span>
+            <h2>Поиск задач</h2>
+            <form action="{{ url_for('main.search_tasks') }}" method="GET">
+                <input type="text" name="query" placeholder="Поиск..." required>
+                <div class="modal-buttons">
+                    <button type="submit">Искать</button>
+                    <button type="button" onclick="closeModal('modalWindowSearch')">Выйти</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
+
     <!-- Модальное окно напоминания -->
     <div id="reminderModal" class="modal">
         <div class="modal-content">
@@ -99,7 +117,6 @@
                 <input type="datetime-local" id="reminderDateTime" name="reminder_date" required>
                 <div class="modal-buttons">
                     <button type="submit" class="btn-reminder">Сохранить</button>
-                    <button type="button" class="btn-exit" onclick="closeModal('reminderModal')">Выйти</button>
                 </div>
             </form>
         </div>
@@ -125,141 +142,157 @@
                 </select>
                 <div class="modal-buttons">
                     <button type="submit">Сохранить</button>
-                    <button type="button" onclick="closeModal('editTaskModal')">Выйти</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Модальное окно для задачи -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('taskModal')">&times;</span>
+            <h2 id="taskModalTitle"></h2>
+            <p id="taskModalDescription"></p>
+            <p><strong>Ответственный:</strong> <span id="taskModalResponsible"></span></p>
+            <p><strong>Регион:</strong> <span id="taskModalRegion"></span></p>
+            <p><strong>Приоритет:</strong> <span id="taskModalPriority"></span></p>
+            <p><strong>Дата:</strong> <span id="taskModalDate"></span></p>
+            <p><strong>Статус:</strong> <span id="taskModalStatus"></span></p>
+            <div class="modal-buttons">
+                <button onclick="openEditModalFromTaskModal()">Редактировать</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Основной интерфейс -->
-    <div class="sidebar">
+    <div class="sidebar" id="sideBarHide">
         <div class="account">
             <img src="#" alt="#">
             {{ current_user.username }}
         </div>
         <div class="add-task">
-            <a href="#" onclick="document.getElementById('modalWindowTask').style.display='block'">Добавить задачу</a>
+            <p onclick="document.getElementById('modalWindowTask').style.display='block'">➕ Добавить задачу</p>
         </div>
         <div class="search">
-            <a href="#" onclick="document.getElementById('modalWindowSearch').style.display='block'">Поиск</a>
+            <p onclick="document.getElementById('modalWindowSearch').style.display='block'">🔍 Поиск</p>
         </div>
         <div class="completed">
-            <a href="{{ url_for('main.completed_tasks') }}">Завершенные</a>
-        </div>
+            <a href="{{ url_for('main.completed_tasks') }}" class="completed-link">✔️ Завершенные</a>
+          </div>
     </div>
 
-    <div class="header">
-        <p class="header-text">Individual Task Manager</p>
-    </div>
-    
-    <h1>Задачи</h1>
-    <div class="task-window">
+   
+  
+   
+    <div class="task-window" style="font-size: 10px;">
         <div id="task-list">
-            {% for date, tasks in grouped_tasks.items() %}
-                <h2>{{ date.strftime('%d.%m.%Y') }}</h2>
-                <ul class="ul">
-                    {% for task in tasks %}
-                    <li class="list">
-                        <div class="list-task">
-                            <span class="{% if task.completed %}completed{% endif %}">
-                                <strong>{{ task.title }}</strong> - {{ task.description }}<br>
-                                Ответственный: {{ task.responsible }}<br>
-                                Регион: {{ task.region }}<br>
-                                Приоритет: {{ task.priority }}
-                            </span>
-                            
-                            <div class="task-actions">
-                                <a href="{{ url_for('main.complete_task', id=task.id) }}" class="action-btn complete">✔️</a>
-                                <a href="{{ url_for('main.delete_task', id=task.id) }}" class="action-btn delete">❌</a>
-                                <button class="action-btn edit-btn" 
-                                        data-id="{{ task.id }}"
-                                        data-title="{{ task.title }}"
-                                        data-desc="{{ task.description }}"
-                                        data-date="{{ task.date.strftime('%Y-%m-%d') if task.date else '' }}"
-                                        data-resp="{{ task.responsible }}"
-                                        data-region="{{ task.region }}"
-                                        data-priority="{{ task.priority }}">
-                                    ✏️
-                                </button>
-                                <button class="action-btn reminder-btn" data-id="{{ task.id }}">⏰</button>
-                            </div>
-                        </div>
-                    </li>
-                    {% endfor %}
-                </ul>
-            {% endfor %}
+            {% if grouped_tasks %}
+                {% for date, tasks in grouped_tasks.items() %}
+                    <h2>
+                        {% if date == 'Без даты' %}
+                            Без даты
+                        {% else %}
+                            {{ date.strftime('%d.%m.%Y') }}
+                        {% endif %}
+                    </h2>
+                    <ul class="ul">
+                        {% for task in tasks %}
+                            <li class="list"
+                                data-id="{{ task.id }}"
+                                data-title="{{ task.title | escape }}"
+                                data-description="{{ task.description | escape }}"
+                                data-responsible="{{ task.responsible | escape }}"
+                                data-region="{{ task.region | escape }}"
+                                data-priority="{{ task.priority | escape }}"
+                                data-date="{{ task.date.strftime('%Y-%m-%d') if task.date else '' }}"
+                                data-completed="{{ task.completed }}"
+                                onclick="handleTaskClick(this)">
+                                <div class="list-task">
+                                    <span class="{% if task.completed %}completed{% endif %}">
+                                        <strong>{{ task.title }}</strong> - {{ task.description }}
+                                    </span>
+                                    <a href="{{ url_for('main.complete_task', id=task.id) }}" class="action-btn complete">✔️</a>
+                                    <a href="{{ url_for('main.delete_task', id=task.id) }}" class="action-btn delete">❌</a>
+                                    <form action="{{ url_for('main.toggle_tracking', task_id=task.id) }}" method="post" style="display:inline;">
+                                        {% if task in current_user.tracked_tasks %}
+                                            <button type="submit" title="Не отслеживать" class="action-btn">🔕</button>
+                                        {% else %}
+                                            <button type="submit" title="Отслеживать" class="action-btn">🔔</button>
+                                        {% endif %}
+                                    </form>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endfor %}
+            {% else %}
+                <p>Нет задач для отображения.</p>
+            {% endif %}
         </div>
     </div>
 
     <script>
-        // Общие функции
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
+        function handleTaskClick(el) {
+            openTaskModal(
+                el.dataset.id,
+                el.dataset.title,
+                el.dataset.description,
+                el.dataset.responsible,
+                el.dataset.region,
+                el.dataset.priority,
+                el.dataset.date,
+                el.dataset.completed
+            );
         }
-    
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = 'block';
+
+        function openTaskModal(id, title, description, responsible, region, priority, date, completed) {
+            document.getElementById("taskModalTitle").innerText = title;
+            document.getElementById("taskModalDescription").innerText = description;
+            document.getElementById("taskModalResponsible").innerText = responsible;
+            document.getElementById("taskModalRegion").innerText = region;
+            document.getElementById("taskModalPriority").innerText = priority;
+            document.getElementById("taskModalDate").innerText = date;
+            document.getElementById("taskModalStatus").innerText = completed === "True" ? "Завершена" : "Активна";
+            document.getElementById("taskModal").style.display = "block";
         }
-    
-        // Обработчики кнопок
-        document.addEventListener('DOMContentLoaded', () => {
-            // Напоминания
-            document.querySelectorAll('.reminder-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const taskId = this.getAttribute('data-id');
-                    document.getElementById('reminderTaskId').value = taskId;
-                    
-                    const now = new Date();
-                    const dtInput = document.getElementById('reminderDateTime');
-                    dtInput.min = now.toISOString().slice(0, 16);
-                    dtInput.value = new Date(now.getTime() + 3600000).toISOString().slice(0, 16);
-                    
-                    openModal('reminderModal');
-                });
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = "none";
+                }
             });
-    
-            // Редактирование
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const taskId = this.getAttribute('data-id');
-                    const form = document.getElementById('editTaskForm');
-                    form.action = form.action.replace('/0', `/${taskId}`);
-                    
-                    document.getElementById('editTaskId').value = taskId;
-                    document.getElementById('editTaskTitle').value = this.getAttribute('data-title');
-                    document.getElementById('editTaskDescription').value = this.getAttribute('data-desc');
-                    document.getElementById('editTaskDate').value = this.getAttribute('data-date');
-                    document.getElementById('editTaskResponsible').value = this.getAttribute('data-resp');
-                    document.getElementById('editTaskRegion').value = this.getAttribute('data-region');
-                    document.getElementById('editTaskPriority').value = this.getAttribute('data-priority');
-                    
-                    openModal('editTaskModal');
-                });
-            });
-    
-            // Форма напоминания
-            document.getElementById('reminderForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const formData = new FormData(this);
-                
-                fetch('/set_reminder', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Напоминание установлено!');
-                        closeModal('reminderModal');
-                    } else {
-                        alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
-                    }
-                })
-                .catch(error => {
-                    alert('Ошибка сети: ' + error.message);
-                });
-            });
-        });
+        }
+
+        function openEditModalFromTaskModal() {
+            const taskElement = document.querySelector('[data-id]');
+            const id = taskElement.dataset.id;
+            const title = document.getElementById("taskModalTitle").innerText;
+            const description = document.getElementById("taskModalDescription").innerText;
+            const responsible = document.getElementById("taskModalResponsible").innerText;
+            const region = document.getElementById("taskModalRegion").innerText;
+            const priority = document.getElementById("taskModalPriority").innerText;
+            const date = document.getElementById("taskModalDate").innerText;
+
+            closeModal("taskModal");
+
+            document.getElementById("editTaskId").value = id;
+            document.getElementById("editTaskTitle").value = title;
+            document.getElementById("editTaskDescription").value = description;
+            document.getElementById("editTaskResponsible").value = responsible;
+            document.getElementById("editTaskRegion").value = region;
+            document.getElementById("editTaskPriority").value = priority;
+            document.getElementById("editTaskDate").value = date;
+
+            document.getElementById("editTaskForm").action = "/edit/" + id;
+            document.getElementById("editTaskModal").style.display = "block";
+        }
     </script>
+    <script src="{{ url_for('static', filename='reminder.js') }}"></script>
 </body>
 </html>

@@ -54,7 +54,7 @@ def register():
         if User.query.filter_by(email=email).first():
             flash('Этот email уже используется', 'error')
             return redirect(url_for('main.register'))
-
+        
         try:
             hashed_password = generate_password_hash(password)
             new_user = User(
@@ -287,7 +287,7 @@ def set_reminder():
             'reminder_id': new_reminder.id
         })
         
-    except IntegrityError:
+    except IntegrityError: 
         db.session.rollback()
         return jsonify({
             'success': False,
@@ -376,3 +376,35 @@ def edit_task(task_id):
             flash(f'Ошибка при обновлении задачи: {str(e)}', 'error')
     
     return render_template('edit_task.html', task=task)
+
+# Маршрут для завершения задачи (из JavaScript)
+@bp.route('/complete_task/<int:task_id>', methods=['POST'])
+def complete_task_js(task_id):
+    if not is_authenticated():
+        return jsonify({'success': False, 'error': 'Not authenticated'}), 401
+    task = Task.query.get_or_404(task_id)
+    if task.user_id != session['user_id']:
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    try:
+        task.completed = True
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Маршрут для удаления задачи (из JavaScript)
+@bp.route('/delete_task/<int:task_id>', methods=['DELETE'])
+def delete_task_js(task_id):
+    if not is_authenticated():
+        return jsonify({'success': False, 'error': 'Not authenticated'}), 401
+    task = Task.query.get_or_404(task_id)
+    if task.user_id != session['user_id']:
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    try:
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500

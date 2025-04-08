@@ -2,7 +2,7 @@ from datetime import datetime
 import os
 from flask import Flask
 from extensions import db, migrate, scheduler
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.background import BackgroundScheduler as BackgroundScheduler
 
 def create_app():
     app = Flask(__name__)
@@ -61,3 +61,5 @@ def setup_scheduler(app):
 if __name__ == '__main__':
     app = create_app()
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
+
+

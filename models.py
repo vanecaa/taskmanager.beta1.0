@@ -43,3 +43,11 @@ class Reminder(db.Model):
     sent = db.Column(db.Boolean, default=False)
     
     task = db.relationship('Task', backref=db.backref('reminders', cascade='all, delete-orphan'))
+
+
+
+
+
+
+
+

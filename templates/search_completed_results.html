@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты поиска выполненных задач</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .search-container {
+            margin-left: 260px;
+            padding: 20px;
+        }
+        .search-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .back-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .task-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .task-item {
+            background-color: #070707;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task-info {
+            flex-grow: 1;
+        }
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .no-tasks {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- Боковая панель -->
+    <div class="sidebar">
+        <div class="account">
+            <img src="#" alt="Аватар">
+            {{ current_user.username }}
+        </div>
+        <div class="add-task">
+            <a href="#" onclick="document.getElementById('modalWindowTask').style.display='block'">Добавить задачу</a>
+        </div>
+        <div class="search">
+            <a href="#" onclick="document.getElementById('searchModal').style.display='block'">Поиск</a>
+        </div>
+        <div class="completed">
+            <a href="{{ url_for('main.completed_tasks') }}">Все выполненные</a>  <!-- Исправлено на completed_tasks -->
+        </div>
+    </div>
+
+    <!-- Основное содержимое -->
+    <div class="search-container">
+        <div class="search-header">
+            <h1>Результаты поиска: "{{ query }}"</h1>
+            <a href="{{ url_for('main.completed_tasks') }}" class="back-link">← Вернуться к выполненным</a>  <!-- Исправлено -->
+        </div>
+
+        {% if tasks %}
+            <ul class="task-list">
+                {% for task in tasks %}
+                <li class="task-item">
+                    <div class="task-info">
+                        <strong>{{ task.title }}</strong>
+                        {% if task.description %}
+                            - {{ task.description }}
+                        {% endif %}
+                        <div class="task-meta">
+                            {% if task.date %}
+                                <span>Дата: {{ task.date.strftime('%d.%m.%Y') }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <a href="{{ url_for('main.complete_task', id=task.id) }}" title="Отметить как невыполненную">↩️</a>
+                        <a href="{{ url_for('main.delete_task', id=task.id) }}" title="Удалить" onclick="return confirm('Вы уверены?')">❌</a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-tasks">Не найдено выполненных задач по запросу "{{ query }}"</p>
+        {% endif %}
+    </div>
+
+    <!-- Модальное окно поиска -->
+    <div id="searchModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('searchModal').style.display='none'">&times;</span>
+            <h2>Поиск выполненных задач</h2>
+            <form action="{{ url_for('main.search_completed_tasks') }}" method="GET">
+                <input type="text" name="query" placeholder="Введите название или описание" required>
+                <div class="form-actions">
+                    <button type="submit">Искать</button>
+                    <button type="button" onclick="document.getElementById('searchModal').style.display='none'">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Закрытие модального окна при клике вне его
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
